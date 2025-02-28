@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WordCounter</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --background-color: #ffffff;
+            --text-color: #333333;
+            --border-radius: 8px;
+            --transition-speed: 0.3s;
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #3498db;
+            --background-color: #1a1a1a;
+            --text-color: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            transition: background-color var(--transition-speed), color var(--transition-speed);
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 30px;
+            background-color: var(--background-color);
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            margin: 0 0 30px;
+            color: var(--primary-color);
+            font-size: 2.5em;
+        }
+
+        textarea {
+            width: calc(100% - 40px);
+            max-width: 100%;
+            height: 150px;
+            padding: 15px;
+            margin: 0 auto;
+            display: block;
+            border: 2px solid #ddd;
+            border-radius: var(--border-radius);
+            font-size: 16px;
+            resize: vertical;
+            transition: border-color var(--transition-speed);
+            background-color: var(--background-color);
+            color: var(--text-color);
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 8px rgba(44, 62, 80, 0.2);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+            margin-top: 20px;
+        }
+
+        .stat-card {
+            background: rgba(44, 62, 80, 0.05);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            text-align: center;
+            transition: transform var(--transition-speed);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .stat-card h3 {
+            margin: 0 0 10px;
+            color: var(--primary-color);
+            font-size: 1.1em;
+        }
+
+        .stat-card p {
+            margin: 0;
+            font-size: 1.8em;
+            font-weight: bold;
+        }
+
+        .keyword-density {
+            margin-top: 30px;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background-color: var(--background-color);
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: 600;
+        }
+
+        tr:hover {
+            background-color: rgba(44, 62, 80, 0.05);
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px;
+            color: #777;
+            border-top: 1px solid #eee;
+        }
+
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 25px;
+            background-color: var(--primary-color);
+            color: white;
+            cursor: pointer;
+            transition: var(--transition-speed);
+        }
+
+        .progress-bar {
+            height: 4px;
+            background-color: var(--primary-color);
+            position: fixed;
+            top: 0;
+            left: 0;
+            transition: width 0.5s ease;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="progress-bar" id="progressBar"></div>
+    <button class="theme-toggle" id="themeToggle">🌓 Toggle Theme</button>
+    
+    <div class="container">
+        <h1>📝 WordCounter </h1>
+        <textarea placeholder="Start typing or paste your text here..."></textarea>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>Words</h3>
+                <p id="wordCount">0</p>
+            </div>
+            <div class="stat-card">
+                <h3>Characters</h3>
+                <p id="charCount">0</p>
+            </div>
+            <div class="stat-card">
+                <h3>Sentences</h3>
+                <p id="sentenceCount">0</p>
+            </div>
+            <div class="stat-card">
+                <h3>Paragraphs</h3>
+                <p id="paragraphCount">0</p>
+            </div>
+            <div class="stat-card">
+                <h3>Reading Time</h3>
+                <p id="readingTime">0 min</p>
+            </div>
+        </div>
+
+        <h2>📊 Keyword Density Analysis</h2>
+        <div class="keyword-density">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Keyword</th>
+                        <th>Frequency</th>
+                        <th>Density</th>
+                    </tr>
+                </thead>
+                <tbody id="keywordTable">
+                    <tr><td colspan="3">Start typing to analyze keywords...</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="footer">
+            <p>© 2025 WordCounter | <a href="#" style="color: var(--primary-color);">Privacy Policy</a> | 
+            <a href="mailto:contact@wordcounterpro.com" style="color: var(--primary-color);">Contact</a></p>
+        </div>
+    </div>
+
+    <script>
+        const textarea = document.querySelector('textarea');
+        const themeToggle = document.getElementById('themeToggle');
+        const progressBar = document.getElementById('progressBar');
+        const stopWords = new Set(['a', 'an', 'the', 'and', 'or', 'but', 'of', 'to', 'in', 'on', 'at', 'for', 'with', 'as', 'by', 'from']);
+
+        const elements = {
+            wordCount: document.getElementById('wordCount'),
+            charCount: document.getElementById('charCount'),
+            sentenceCount: document.getElementById('sentenceCount'),
+            paragraphCount: document.getElementById('paragraphCount'),
+            readingTime: document.getElementById('readingTime'),
+            keywordTable: document.getElementById('keywordTable')
+        };
+
+        // Theme Toggle
+        themeToggle.addEventListener('click', () => {
+            document.body.setAttribute('data-theme',
+                document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'
+            );
+        });
+
+        // Debounce function for better performance
+        const debounce = (func, delay = 300) => {
+            let timeout;
+            return (...args) => {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(this, args), delay);
+            };
+        };
+
+        const analyzeText = () => {
+            const text = textarea.value.trim();
+            const words = text ? text.match(/\b[\w']+\b/g) || [] : [];
+            const sentences = text ? text.split(/[.!?]+/).filter(s => s.trim()) : [];
+            const paragraphs = text ? text.split(/\n+/).filter(p => p.trim()) : [];
+            const totalChars = text.length;
+            const wordCount = words.length;
+
+            // Update progress bar
+            const textLength = text.length;
+            const maxLength = 10000;
+            progressBar.style.width = `${Math.min((textLength / maxLength) * 100, 100)}%`;
+
+            // Update basic stats
+            elements.wordCount.textContent = wordCount;
+            elements.charCount.textContent = totalChars;
+            elements.sentenceCount.textContent = sentences.length;
+            elements.paragraphCount.textContent = paragraphs.length;
+
+            // Calculate reading time (200 words per minute)
+            const readingTimeMin = wordCount / 200;
+            elements.readingTime.textContent = readingTimeMin < 1 ?
+                '<1 min' : `${Math.ceil(readingTimeMin)} min`;
+
+            // Keyword analysis
+            const keywordFrequency = {};
+            words.forEach(word => {
+                const cleanWord = word.toLowerCase().replace(/[^a-z']/g, '');
+                if (cleanWord.length > 2 && !stopWords.has(cleanWord)) {
+                    keywordFrequency[cleanWord] = (keywordFrequency[cleanWord] || 0) + 1;
+                }
+            });
+
+            const sortedKeywords = Object.entries(keywordFrequency)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 15);
+
+            elements.keywordTable.innerHTML = sortedKeywords.length > 0 ?
+                sortedKeywords.map(([word, count]) => `
+                    <tr>
+                        <td>${word}</td>
+                        <td>${count}</td>
+                        <td>${((count / wordCount) * 100).toFixed(2)}%</td>
+                    </tr>
+                `).join('') :
+                '<tr><td colspan="3">No significant keywords found</td></tr>';
+        };
+
+        // Event listeners
+        textarea.addEventListener('input', debounce(analyzeText));
+        textarea.addEventListener('scroll', () => {
+            const scrollPercent = (textarea.scrollTop / (textarea.scrollHeight - textarea.clientHeight)) * 100;
+            progressBar.style.width = `${scrollPercent}%`;
+        });
+
+        // Initial analysis
+        analyzeText();
+    </script>
+</body>
+</html>
